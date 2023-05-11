@@ -1,0 +1,25 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+#
+# Reference (https://github.com/kan-bayashi/ParallelWaveGAN/)
+
+
+###########################################################
+#                   DATA SETTING                          #
+###########################################################
+sampling_rate: 24000
+data:
+    path: "/mnt/home/yichiaowu/datasets/LibriTTS/LibriTTS/24000"
+    subset:
+        train: "train-clean-450"
+        valid: "dev-clean-1utt"
+        test:  "test-clean-1utt"
+
+###########################################################
+#                    STATISTIC SETTING                    #
+###########################################################
+analyzer: "exp/autoencoder/symAD_libritts_24000_hop300/checkpoint-500000steps.pkl"
+stats: "stats/symAD_libritts_24000_hop300_clean.npy"

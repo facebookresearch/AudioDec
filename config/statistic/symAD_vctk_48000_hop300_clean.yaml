@@ -1,0 +1,25 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+#
+# Reference (https://github.com/kan-bayashi/ParallelWaveGAN/)
+
+
+###########################################################
+#                   DATA SETTING                          #
+###########################################################
+sampling_rate: 48000
+data:
+    path: "/mnt/home/yichiaowu/datasets/vctk_noisy/48000"
+    subset:
+        train: "clean_trainset_84spk_wav"
+        valid: "clean_validset_84spk_wav"
+        test:  "clean_testset_wav"
+
+###########################################################
+#                    STATISTIC SETTING                    #
+###########################################################
+analyzer: "exp/autoencoder/symAD_vctk_48000_hop300/checkpoint-200000steps.pkl"
+stats: "stats/symAD_vctk_48000_hop300_clean.npy"

@@ -1,0 +1,192 @@
+batch_length: 96000
+batch_size: 16
+config: config/denoise/symAD_vctk_48000_hop300.yaml
+data:
+  path: /mnt/home/yichiaowu/datasets/vctk_noisy/48000
+  subset:
+    clean_test: clean_testset_wav
+    clean_train: clean_trainset_84spk_wav
+    clean_valid: clean_validset_84spk_wav
+    noisy_test: noisy_testset_wav
+    noisy_train: noisy_trainset_84spk_wav
+    noisy_valid: noisy_validset_84spk_wav
+disable_cudnn: 'False'
+discriminator_adv_loss_params:
+  average_by_discriminators: false
+discriminator_grad_norm: -1
+discriminator_optimizer_params:
+  betas:
+  - 0.5
+  - 0.9
+  lr: 0.0002
+  weight_decay: 0.0
+discriminator_optimizer_type: Adam
+discriminator_params:
+  follow_official_norm: true
+  period_discriminator_params:
+    bias: true
+    channels: 32
+    downsample_scales:
+    - 3
+    - 3
+    - 3
+    - 3
+    - 1
+    in_channels: 1
+    kernel_sizes:
+    - 5
+    - 3
+    max_downsample_channels: 1024
+    nonlinear_activation: LeakyReLU
+    nonlinear_activation_params:
+      negative_slope: 0.1
+    out_channels: 1
+    use_spectral_norm: false
+    use_weight_norm: true
+  periods:
+  - 2
+  - 3
+  - 5
+  - 7
+  - 11
+  scale_discriminator_params:
+    bias: true
+    channels: 128
+    downsample_scales:
+    - 4
+    - 4
+    - 4
+    - 4
+    - 1
+    in_channels: 1
+    kernel_sizes:
+    - 15
+    - 41
+    - 5
+    - 3
+    max_downsample_channels: 1024
+    max_groups: 16
+    nonlinear_activation: LeakyReLU
+    nonlinear_activation_params:
+      negative_slope: 0.1
+    out_channels: 1
+  scale_downsample_pooling: AvgPool1d
+  scale_downsample_pooling_params:
+    kernel_size: 4
+    padding: 2
+    stride: 2
+  scales: 3
+discriminator_scheduler_params:
+  gamma: 0.5
+  milestones:
+  - 200000
+  - 400000
+  - 600000
+  - 800000
+discriminator_scheduler_type: MultiStepLR
+eval_interval_steps: 1000
+exp_root: exp
+feat_match_loss_params:
+  average_by_discriminators: false
+  average_by_layers: false
+  include_final_outputs: false
+generator_adv_loss_params:
+  average_by_discriminators: false
+generator_grad_norm: -1
+generator_optimizer_params:
+  betas:
+  - 0.5
+  - 0.9
+  lr: 0.0001
+  weight_decay: 0.0
+generator_optimizer_type: Adam
+generator_params:
+  bias: true
+  code_dim: 64
+  codebook_num: 8
+  codebook_size: 1024
+  codec: audiodec
+  dec_ratios:
+  - 16
+  - 8
+  - 4
+  - 2
+  dec_strides:
+  - 5
+  - 5
+  - 4
+  - 3
+  decode_channels: 32
+  enc_ratios:
+  - 2
+  - 4
+  - 8
+  - 16
+  enc_strides:
+  - 3
+  - 4
+  - 5
+  - 5
+  encode_channels: 32
+  input_channels: 1
+  mode: causal
+  output_channels: 1
+  projector: conv1d
+  quantier: residual_vq
+generator_scheduler_params:
+  gamma: 1.0
+  step_size: 200000
+generator_scheduler_type: StepLR
+initial: exp/autoencoder/symAD_vctk_48000_hop300/checkpoint-200000steps.pkl
+lambda_adv: 1.0
+lambda_feat_match: 2.0
+lambda_mel_loss: 45.0
+lambda_shape_loss: 45.0
+lambda_stft_loss: 45.0
+lambda_vq_loss: 1.0
+log_interval_steps: 100
+mel_loss_params:
+  fft_size: 2048
+  fmax: 24000
+  fmin: 0
+  fs: 48000
+  hop_size: 300
+  log_base: null
+  num_mels: 80
+  win_length: null
+  window: hann
+model_type: symAudioDec
+num_workers: 2
+outdir: exp/denoise/symAD_vctk_48000_hop300
+pin_memory: true
+resume: ''
+sampling_rate: 48000
+save_interval_steps: 10000
+seed: 1337
+shape_loss_params:
+  winlen:
+  - 300
+start_steps:
+  discriminator: 200000
+  generator: 0
+stft_loss_params:
+  fft_sizes:
+  - 1024
+  - 2048
+  - 512
+  hop_sizes:
+  - 120
+  - 240
+  - 50
+  win_lengths:
+  - 600
+  - 1200
+  - 240
+  window: hann_window
+tag: denoise/symAD_vctk_48000_hop300
+train_max_steps: 200000
+train_mode: denoise
+use_feat_match_loss: true
+use_mel_loss: true
+use_shape_loss: false
+use_stft_loss: false

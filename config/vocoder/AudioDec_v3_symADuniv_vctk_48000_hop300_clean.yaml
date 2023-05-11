@@ -1,0 +1,185 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+#
+# Reference (https://github.com/kan-bayashi/ParallelWaveGAN/)
+
+
+###########################################################
+#                   DATA SETTING                          #
+###########################################################
+sampling_rate: &sampling_rate 48000
+data:
+    path: "/mnt/home/yichiaowu/datasets/vctk_noisy/48000"
+    subset:
+        train: "clean_trainset_84spk_wav"
+        valid: "clean_validset_84spk_wav"
+        test: "clean_testset_wav"
+
+###########################################################
+#                   MODEL SETTING                         #
+###########################################################
+model_type: UnivNet
+train_mode: vocoder
+analyzer: "exp/autoencoder/symADuniv_vctk_48000_hop300/checkpoint-500000steps.pkl"
+
+generator_params:
+    in_channels: 64                       # Number of input channels.
+    out_channels: 1                       # Number of output channels.
+    channels: 512                         # Number of initial channels.
+    kernel_size: 7                        # Kernel size of initial and final conv layers.
+    upsample_scales: [5, 5, 4, 3]         # Upsampling scales. The product of upsample_scales should be the same as hop_size.
+    upsample_kernel_sizes: [10, 10, 8, 6] # Kernel size for upsampling layers.
+    resblock_kernel_sizes: [11]           # Kernel size for residual blocks.
+    resblock_dilations:                   # Dilations for residual blocks.
+        - [1, 3, 5]
+    groups: 3                             # groups number of conv.
+    bias: true                            # Whether to use bias parameter in conv.
+    use_additional_convs: true            # Whether to use additional conv layer in residual blocks.
+    nonlinear_activation: "LeakyReLU"     # Nonlinear activation type.
+    nonlinear_activation_params:          # Nonlinear activation paramters.
+        negative_slope: 0.1
+    use_weight_norm: true                 # Whether to apply weight normalization.
+    stats: "stats/symADuniv_vctk_48000_hop300_clean.npy"
+
+discriminator_params:
+    fft_sizes: [1024, 2048, 512]           # FFT sizes for each spectral discriminator.
+    hop_sizes: [120, 240, 50]              # Hop sizes for each spectral discriminator.
+    win_lengths: [600, 1200, 240]          # Window lengths for each spectral discriminator.
+    window: "hann_window"                  # Name of window function.
+    spectral_discriminator_params:         # Params for UnivNet spectral discriminator.
+      channels: 32                         # Number of channels for conv layer.
+      kernel_sizes:                        # List of stride sizes in down-sampling CNNs.
+        - [3, 9]
+        - [3, 9]
+        - [3, 9]
+        - [3, 9]
+        - [3, 3]
+        - [3, 3]
+      strides:                             #  List of kernel sizes in down-sampling CNNs.
+        - [1, 1]
+        - [1, 2]
+        - [1, 2]
+        - [1, 2]
+        - [1, 1]
+        - [1, 1]
+      bias: true                           # Whether to add bias parameter in convolution layers.
+      nonlinear_activation: "LeakyReLU"    # Nonlinear activation.
+      nonlinear_activation_params:         # Nonlinear activation paramters.
+        negative_slope: 0.2
+    periods: [2, 3, 5, 7, 11]              # List of period for multi-period discriminator.
+    period_discriminator_params:
+        in_channels: 1                     # Number of input channels.
+        out_channels: 1                    # Number of output channels.
+        kernel_sizes: [5, 3]               # List of kernel sizes.
+        channels: 32                       # Initial number of channels.
+        downsample_scales: [3, 3, 3, 3, 1] # Downsampling scales.
+        max_downsample_channels: 1024      # Maximum number of channels in downsampling conv layers.
+        bias: true                         # Whether to use bias parameter in conv layer."
+        nonlinear_activation: "LeakyReLU"  # Nonlinear activation.
+        nonlinear_activation_params:       # Nonlinear activation paramters.
+            negative_slope: 0.1
+        use_weight_norm: true              # Whether to apply weight normalization.
+        use_spectral_norm: false           # Whether to apply spectral normalization.
+
+###########################################################
+#                 METRIC LOSS SETTING                     #
+###########################################################
+use_mel_loss: true                   # Whether to use Mel-spectrogram loss.
+mel_loss_params:
+    fs: *sampling_rate
+    fft_sizes: [2048]
+    hop_sizes: [300]
+    win_lengths: [2048]
+    window: "hann_window"
+    num_mels: 80
+    fmin: 0
+    fmax: 24000
+    log_base: null
+
+use_stft_loss: false                 # Whether to use multi-resolution STFT loss.
+stft_loss_params:
+    fft_sizes: [1024, 2048, 512]     # List of FFT size for STFT-based loss.
+    hop_sizes: [120, 240, 50]        # List of hop size for STFT-based loss
+    win_lengths: [600, 1200, 240]    # List of window length for STFT-based loss.
+    window: "hann_window"            # Window function for STFT-based loss
+
+use_shape_loss: false                # Whether to use waveform shape loss.
+shape_loss_params:
+    winlen: [300]
+
+###########################################################
+#                  ADV LOSS SETTING                       #
+###########################################################
+generator_adv_loss_params:
+    average_by_discriminators: false # Whether to average loss by #discriminators.
+
+discriminator_adv_loss_params:
+    average_by_discriminators: false # Whether to average loss by #discriminators.
+
+use_feat_match_loss: true
+feat_match_loss_params:
+    average_by_discriminators: false # Whether to average loss by #discriminators.
+    average_by_layers: false         # Whether to average loss by #layers in each discriminator.
+    include_final_outputs: false     # Whether to include final outputs in feat match loss calculation.
+
+###########################################################
+#                  LOSS WEIGHT SETTING                    #
+###########################################################
+lambda_adv: 1.0          # Loss weight for adversarial loss.
+lambda_feat_match: 2.0   # Loss weight for feat match loss.
+lambda_mel_loss: 45.0    # Loss weight of mel-spectrogram spectloss.
+lambda_stft_loss: 45.0   # Loss weight of multi-resolution stft loss.
+lambda_shape_loss: 45.0  # Loss weight of multi-window shape loss.
+
+###########################################################
+#                  DATA LOADER SETTING                    #
+###########################################################
+batch_size: 16              # Batch size.
+batch_length: 9600          # Length of each audio in batch. Make sure dividable by hop_size.
+pin_memory: true            # Whether to pin memory in Pytorch DataLoader.
+num_workers: 2              # Number of workers in Pytorch DataLoader.
+
+###########################################################
+#             OPTIMIZER & SCHEDULER SETTING               #
+###########################################################
+generator_optimizer_type: Adam
+generator_optimizer_params:
+    lr: 2.0e-4
+    betas: [0.5, 0.9]
+    weight_decay: 0.0
+generator_scheduler_type: MultiStepLR
+generator_scheduler_params:
+    gamma: 0.5
+    milestones:
+        - 200000
+        - 400000
+        - 600000
+        - 800000
+generator_grad_norm: -1
+discriminator_optimizer_type: Adam
+discriminator_optimizer_params:
+    lr: 2.0e-4
+    betas: [0.5, 0.9]
+    weight_decay: 0.0
+discriminator_scheduler_type: MultiStepLR
+discriminator_scheduler_params:
+    gamma: 0.5
+    milestones:
+        - 200000
+        - 400000
+        - 600000
+        - 800000
+discriminator_grad_norm: -1
+
+###########################################################
+#                    INTERVAL SETTING                     #
+###########################################################
+generator_train_start_steps: 1     # Number of steps to start to train discriminator.
+discriminator_train_start_steps: 0 # Number of steps to start to train discriminator.
+train_max_steps: 500000            # Number of training steps.
+save_interval_steps: 100000        # Interval steps to save checkpoint.
+eval_interval_steps: 1000          # Interval steps to evaluate the network.
+log_interval_steps: 100            # Interval steps to record the training log.
