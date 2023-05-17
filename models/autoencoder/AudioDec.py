@@ -93,6 +93,9 @@ class Generator(torch.nn.Module):
         )
 
     def forward(self, x):
+        (batch, channel, length) = x.size()
+        if channel != self.input_channels: 
+            x = x.reshape(-1, self.input_channels, length) # (B, C, T) -> (B', C', T)
         x = self.encoder(x)
         z = self.projector(x)
         zq, vqloss, perplexity = self.quantizer(z)
@@ -158,6 +161,9 @@ class StreamGenerator(Generator):
 
 
     def encode(self, x):
+        (batch, channel, length) = x.size()
+        if channel != self.input_channels: 
+            x = x.reshape(-1, self.input_channels, length) # (B, C, T) -> (B', C', T)
         x = self.encoder.encode(x)
         z = self.projector.encode(x)
         return z

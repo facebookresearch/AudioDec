@@ -49,15 +49,27 @@ class SingleDataset(Dataset):
     def __len__(self):
         return len(self.filenames)
     
+    
+    def _read_list(self, listfile):
+        filenames = []
+        with open(listfile) as f:
+            for line in f:
+                line = line.strip()
+                if len(line):
+                    filenames.append(line)
+        return filenames
+    
 
     def _load_list(self, files, query):
         if isinstance(files, list):
             filenames = files
         else:
-            if os.path.exists(files):
+            if os.path.isdir(files):
                 filenames = sorted(find_files(files, query))
+            elif os.path.isfile(files):
+                filenames = sorted(self._read_list(files))
             else:
-                raise ValueError(f"{files} is not a list or a existing folder!")
+                raise ValueError(f"{files} is not a list / existing folder or file!")
             
         if self.subset_num > 0:
             filenames = filenames[:self.subset_num]
@@ -78,7 +90,7 @@ class SingleDataset(Dataset):
 
     def _load_data(self, filename, load_fn):
         if load_fn == sf.read:
-            data, _ = load_fn(filename, always_2d=True) # T x C, 1
+            data, _ = load_fn(filename, always_2d=True) # (T, C)
         else:
             data = load_fn(filename)
         return data

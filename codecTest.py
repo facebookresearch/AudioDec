@@ -25,6 +25,10 @@ class TestMain(TestGEN):
         super(TestMain, self).__init__(args=args,)
         self.encoder_type = self.encoder_config.get('model_type', 'symAudioDec')
         self.decoder_type = self.decoder_config.get('model_type', 'symAudioDec')
+        if self.encoder_config['generator_params']['input_channels'] > 1:
+            self.multi_channel = True
+        else:
+            self.multi_channel = False
     
 
     # LOAD DATASET
@@ -73,7 +77,10 @@ class TestMain(TestGEN):
 
     def encode(self, audio):
         x = torch.tensor(audio, dtype=torch.float).to(self.device)
-        x = x.transpose(1, 0).unsqueeze(1) # (T, C) -> (C, 1, T)
+        if self.multi_channel:
+            x = x.transpose(1, 0).unsqueeze(0) # (T, C) -> (1, C, T)
+        else:
+            x = x.transpose(1, 0).unsqueeze(1) # (T, C) -> (C, 1, T)
         x = self.encoder.encoder(x)
         z = self.encoder.projector(x)
         zq, _, _ = self.encoder.quantizer(z)

@@ -231,7 +231,7 @@ class TrainerGAN(abc.ABC):
             self._record_loss('log_stft_magnitude_loss', mag_loss, mode=mode)
             metric_loss += (sc_loss + mag_loss)
 
-        # waveform shape losss
+        # waveform shape loss
         if self.config.get("use_shape_loss", False):
             shape_loss = self.criterion["shape"](predict_y, natural_y)
             shape_loss *= self.config["lambda_shape_loss"]
