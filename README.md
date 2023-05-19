@@ -77,7 +77,7 @@ $ python demoStream.py --tx_cuda -1 --rx_cuda -1 --input_device 1 --output_devic
 ```
 
 ## Run codec demo with files
-1. Please download the whole [exp](https://ghe.oculus-rep.com/yichiaowu/AudioDec/releases/download/pretrain_models/exp.zip) folder and put it in the AudioDec project directory.  
+1. Please download the whole [exp](https://github.com/facebookresearch/AudioDec/releases/download/pretrain_models/exp.zip) folder and put it in the AudioDec project directory.  
 2. Run the demo  
 ```bash
 ## VCTK 48000Hz models
