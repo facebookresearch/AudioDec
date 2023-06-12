@@ -57,7 +57,7 @@ The source codes of trainers.
 The source codes of utils for the demo.
 
 ## Run real-time streaming encoding/decoding demo
-1. Please download the whole [exp](https://ghe.oculus-rep.com/yichiaowu/AudioDec/releases/download/pretrain_models/exp.zip) folder and put it in the AudioDec project directory.  
+1. Please download the whole [exp](https://github.com/facebookresearch/AudioDec/releases/download/pretrain_models/exp.zip) folder and put it in the AudioDec project directory.  
 2. Get the list of all I/O devices
 ```bash
 $ python -m sounddevice
