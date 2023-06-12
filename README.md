@@ -135,7 +135,7 @@ $ bash submit_autoencoder.sh --stage 2 \
 ```
 
 ## Pre-trained Models
-All pre-trained models can be accessed via [exp](https://ghe.oculus-rep.com/yichiaowu/AudioDec/releases/download/pretrain_models/exp.zip) (only the generators are provided).
+All pre-trained models can be accessed via [exp](https://github.com/facebookresearch/AudioDec/releases/download/pretrain_models/exp.zip) (only the generators are provided).
 
 | AutoEncoder | Corpus | Fs | Bitrate | Path |  
 |---  |---  |---  |---  |---  |
