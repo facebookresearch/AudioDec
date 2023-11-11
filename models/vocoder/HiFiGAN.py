@@ -19,11 +19,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from layers.conv_layer import CausalConv1d, CausalConvTranspose1d
-from models.vocoder.modules.multi_fusion import MultiReceptiveField, MultiGroupConv1d
-from models.vocoder.modules.discriminator import HiFiGANMultiScaleDiscriminator
-from models.vocoder.modules.discriminator import HiFiGANMultiPeriodDiscriminator
-
+from AudioDec.layers.conv_layer import CausalConv1d, CausalConvTranspose1d
+from AudioDec.models.vocoder.modules.multi_fusion import MultiReceptiveField, MultiGroupConv1d
+from AudioDec.models.vocoder.modules.discriminator import HiFiGANMultiScaleDiscriminator
+from AudioDec.models.vocoder.modules.discriminator import HiFiGANMultiPeriodDiscriminator
 
 class Generator(nn.Module):
     """HiFiGAN causal generator module."""

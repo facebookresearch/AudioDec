@@ -10,16 +10,15 @@
 # Reference (https://github.com/kan-bayashi/ParallelWaveGAN/)
 
 """AudioDec model."""
-
 import torch
 import inspect
 
-from layers.conv_layer import CausalConv1d, CausalConvTranspose1d
-from models.autoencoder.modules.encoder import Encoder
-from models.autoencoder.modules.decoder import Decoder
-from models.autoencoder.modules.projector import Projector
-from models.autoencoder.modules.quantizer import Quantizer
-from models.utils import check_mode
+from AudioDec.layers.conv_layer import CausalConv1d, CausalConvTranspose1d
+from AudioDec.models.autoencoder.modules.encoder import Encoder
+from AudioDec.models.autoencoder.modules.decoder import Decoder
+from AudioDec.models.autoencoder.modules.projector import Projector
+from AudioDec.models.autoencoder.modules.quantizer import Quantizer
+from AudioDec.models.utils import check_mode
 
 
 ### GENERATOR ###

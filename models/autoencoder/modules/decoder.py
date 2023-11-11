@@ -14,11 +14,11 @@
 import torch
 import inspect
 
-from layers.conv_layer import NonCausalConv1d, NonCausalConvTranspose1d
-from layers.conv_layer import CausalConv1d, CausalConvTranspose1d
-from models.autoencoder.modules.residual_unit import NonCausalResidualUnit
-from models.autoencoder.modules.residual_unit import CausalResidualUnit
-from models.utils import check_mode
+from AudioDec.layers.conv_layer import NonCausalConv1d, NonCausalConvTranspose1d
+from AudioDec.layers.conv_layer import CausalConv1d, CausalConvTranspose1d
+from AudioDec.models.autoencoder.modules.residual_unit import NonCausalResidualUnit
+from AudioDec.models.autoencoder.modules.residual_unit import CausalResidualUnit
+from AudioDec.models.utils import check_mode
 
 
 class DecoderBlock(torch.nn.Module):

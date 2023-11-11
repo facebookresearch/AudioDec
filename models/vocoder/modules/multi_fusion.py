@@ -16,8 +16,8 @@
 import math
 import torch
 import torch.nn as nn
-from layers.conv_layer import CausalConv1d, Conv1d1x1
-from models.vocoder.modules.residual_block import HiFiGANResidualBlock
+from AudioDec.layers.conv_layer import CausalConv1d, Conv1d1x1
+from AudioDec.models.vocoder.modules.residual_block import HiFiGANResidualBlock
 
 
 class MultiReceptiveField(nn.Module):

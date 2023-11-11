@@ -9,7 +9,7 @@
 
 import torch
 
-from layers.vq_module import ResidualVQ
+from AudioDec.layers.vq_module import ResidualVQ
 
 
 class Quantizer(torch.nn.Module):
