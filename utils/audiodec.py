@@ -11,9 +11,9 @@ import os
 import torch
 import math
 from typing import Union
-from models.autoencoder.AudioDec import StreamGenerator as generator_audiodec
-from models.vocoder.HiFiGAN import StreamGenerator as generator_hifigan
-from bin.stream import AudioCodec, AudioCodecStreamer
+from AudioDec.models.autoencoder.AudioDec import StreamGenerator as generator_audiodec
+from AudioDec.models.vocoder.HiFiGAN import StreamGenerator as generator_hifigan
+from AudioDec.bin.stream import AudioCodec, AudioCodecStreamer
 
 
 class AudioDec(AudioCodec):

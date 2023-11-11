@@ -11,16 +11,15 @@
 # Reference (https://github.com/jik876/hifi-gan/)
 
 """AudioDec model."""
-
 import torch
 import logging
 
-from layers.conv_layer import CausalConv1d, CausalConvTranspose1d
-from models.autoencoder.modules.encoder import Encoder, ActivateEncoder
-from models.autoencoder.modules.decoder import Decoder, ActivateDecoder
-from models.autoencoder.modules.projector import Projector
-from models.autoencoder.modules.quantizer import Quantizer
-from models.utils import check_mode
+from AudioDec.layers.conv_layer import CausalConv1d, CausalConvTranspose1d
+from AudioDec.models.autoencoder.modules.encoder import Encoder, ActivateEncoder
+from AudioDec.models.autoencoder.modules.decoder import Decoder, ActivateEncoder
+from AudioDec.models.autoencoder.modules.projector import Projector
+from AudioDec.models.autoencoder.modules.quantizer import Quantizer
+from AudioDec.models.utils import check_mode
 
 
 ### GENERATOR ###

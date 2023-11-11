@@ -16,8 +16,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from models.vocoder.modules.discriminator import UnivNetMultiResolutionSpectralDiscriminator
-from models.vocoder.modules.discriminator import HiFiGANMultiPeriodDiscriminator
+from AudioDec.models.vocoder.modules.discriminator import UnivNetMultiResolutionSpectralDiscriminator
+from AudioDec.models.vocoder.modules.discriminator import HiFiGANMultiPeriodDiscriminator
 
 
 class Discriminator(nn.Module):
