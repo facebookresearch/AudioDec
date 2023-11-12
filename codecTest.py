@@ -15,10 +15,10 @@ import logging
 import argparse
 import soundfile as sf
 
-from dataloader import SingleDataset
-from models.autoencoder.AudioDec import Generator as generator_audiodec
-from models.vocoder.HiFiGAN import Generator as generator_hifigan
-from bin.test import TestGEN
+from AudioDec.dataloader import SingleDataset
+from AudioDec.models.autoencoder.AudioDec import Generator as generator_audiodec
+from AudioDec.models.vocoder.HiFiGAN import Generator as generator_hifigan
+from AudioDec.bin.test import TestGEN
 
 class TestMain(TestGEN):
     def __init__(self, args,):
