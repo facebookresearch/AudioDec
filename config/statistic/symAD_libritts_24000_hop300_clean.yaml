@@ -12,14 +12,14 @@
 ###########################################################
 sampling_rate: 24000
 data:
-    path: "/mnt/home/yichiaowu/datasets/LibriTTS/LibriTTS/24000"
+    path: /mnt/home/yichiaowu/datasets/LibriTTS/LibriTTS/24000
     subset:
-        train: "train-clean-450"
-        valid: "dev-clean-1utt"
-        test:  "test-clean-1utt"
+        train: train-clean-450
+        valid: dev-clean-1utt
+        test:  test-clean-1utt
 
 ###########################################################
 #                    STATISTIC SETTING                    #
 ###########################################################
-analyzer: "exp/autoencoder/symAD_libritts_24000_hop300/checkpoint-500000steps.pkl"
-stats: "stats/symAD_libritts_24000_hop300_clean.npy"
+analyzer: exp/autoencoder/symAD_libritts_24000_hop300/checkpoint-500000steps.pkl
+stats: stats/symAD_libritts_24000_hop300_clean.npy

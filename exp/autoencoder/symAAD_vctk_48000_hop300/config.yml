@@ -1,8 +1,8 @@
 adv_batch_length: 9600
-adv_train_max_steps: 1000000
+adv_train_max_steps: 700000
 batch_length: 9600
 batch_size: 16
-config: config/autoencoder/symADuniv_vctk_48000_hop300.yaml
+config: config/autoencoder/symAAD_vctk_48000_hop300.yaml
 data:
   path: /mnt/home/yichiaowu/datasets/vctk_noisy/48000
   subset:
@@ -21,14 +21,7 @@ discriminator_optimizer_params:
   weight_decay: 0.0
 discriminator_optimizer_type: Adam
 discriminator_params:
-  fft_sizes:
-  - 1024
-  - 2048
-  - 512
-  hop_sizes:
-  - 120
-  - 240
-  - 50
+  follow_official_norm: true
   period_discriminator_params:
     bias: true
     channels: 32
@@ -55,43 +48,33 @@ discriminator_params:
   - 5
   - 7
   - 11
-  spectral_discriminator_params:
+  scale_discriminator_params:
     bias: true
-    channels: 32
+    channels: 128
+    downsample_scales:
+    - 4
+    - 4
+    - 4
+    - 4
+    - 1
+    in_channels: 1
     kernel_sizes:
-    - - 3
-      - 9
-    - - 3
-      - 9
-    - - 3
-      - 9
-    - - 3
-      - 9
-    - - 3
-      - 3
-    - - 3
-      - 3
+    - 15
+    - 41
+    - 5
+    - 3
+    max_downsample_channels: 1024
+    max_groups: 16
     nonlinear_activation: LeakyReLU
     nonlinear_activation_params:
-      negative_slope: 0.2
-    strides:
-    - - 1
-      - 1
-    - - 1
-      - 2
-    - - 1
-      - 2
-    - - 1
-      - 2
-    - - 1
-      - 1
-    - - 1
-      - 1
-  win_lengths:
-  - 600
-  - 1200
-  - 240
-  window: hann_window
+      negative_slope: 0.1
+    out_channels: 1
+  scale_downsample_pooling: AvgPool1d
+  scale_downsample_pooling_params:
+    kernel_size: 4
+    padding: 2
+    stride: 2
+  scales: 3
 discriminator_scheduler_params:
   gamma: 0.5
   milestones:
@@ -121,7 +104,7 @@ generator_params:
   code_dim: 64
   codebook_num: 8
   codebook_size: 1024
-  codec: audiodec
+  codec: activate_audiodec
   dec_ratios:
   - 16
   - 8
@@ -149,6 +132,7 @@ generator_params:
   output_channels: 1
   projector: conv1d
   quantier: residual_vq
+  use_weight_norm: true
 generator_scheduler_params:
   gamma: 1.0
   step_size: 200000
@@ -173,9 +157,9 @@ mel_loss_params:
   win_lengths:
   - 2048
   window: hann_window
-model_type: symAudioDecUniv
+model_type: symAudioDec
 num_workers: 2
-outdir: exp/autoencoder/symADuniv_vctk_48000_hop300
+outdir: exp/autoencoder/symAAD_vctk_48000_hop300
 paradigm: efficient
 pin_memory: true
 resume: ''
@@ -186,7 +170,7 @@ shape_loss_params:
   winlen:
   - 300
 start_steps:
-  discriminator: 500000
+  discriminator: 200000
   generator: 0
 stft_loss_params:
   fft_sizes:
@@ -202,8 +186,8 @@ stft_loss_params:
   - 1200
   - 240
   window: hann_window
-tag: autoencoder/symADuniv_vctk_48000_hop300
-train_max_steps: 500000
+tag: autoencoder/symAAD_vctk_48000_hop300
+train_max_steps: 200000
 train_mode: autoencoder
 use_feat_match_loss: true
 use_mel_loss: true

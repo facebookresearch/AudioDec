@@ -15,7 +15,7 @@ import torch
 import torch.nn as nn
 
 from layers.conv_layer import Conv1d1x1, NonCausalConv1d, CausalConv1d
-
+from layers.activation_function import get_activation
 
 class NonCausalResidualUnit(nn.Module):
     def __init__(
@@ -29,7 +29,7 @@ class NonCausalResidualUnit(nn.Module):
         nonlinear_activation_params={}, 
     ):
         super().__init__()
-        self.activation = getattr(nn, nonlinear_activation)(**nonlinear_activation_params)
+        self.activation = get_activation(nonlinear_activation, nonlinear_activation_params)
         self.conv1 = NonCausalConv1d(
             in_channels=in_channels,
             out_channels=out_channels,

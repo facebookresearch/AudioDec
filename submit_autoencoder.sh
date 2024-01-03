@@ -27,6 +27,8 @@
 ### VCTK ###
 tag_name="autoencoder/symAD_vctk_48000_hop300"
 #tag_name="autoencoder/symADuniv_vctk_48000_hop300"
+#tag_name="autoencoder/symAAD_snake_vctk_48000_hop300"
+#tag_name="autoencoder/symAD_c16_vctk_48000_hop320"
 
 ### LibriTTS ###
 #tag_name="autoencoder/symAD_libritts_24000_hop300"

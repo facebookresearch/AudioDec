@@ -24,8 +24,9 @@ A good audio codec for live applications such as telecommunication is characteri
 
 
 ## NEWS
-- **2023/5/17**: Upload the demo sounds on the [demo page](https://bigpon.github.io/AudioDec_demo/)
-- **2023/5/13**: 1st version is released
+- **2024/01/03**: Update pre-trained models ([issue9](https://github.com/facebookresearch/AudioDec/issues/9) and [issue11](https://github.com/facebookresearch/AudioDec/issues/11))
+- **2023/05/17**: Upload the demo sounds on the [demo page](https://bigpon.github.io/AudioDec_demo/)
+- **2023/05/13**: 1st version is released
 
 ## Requirements
 This repository is tested on Ubuntu 20.04 using a V100 and the following settings.
@@ -140,6 +141,8 @@ All pre-trained models can be accessed via [exp](https://github.com/facebookrese
 
 | AutoEncoder | Corpus | Fs | Bitrate | Path |  
 |---  |---  |---  |---  |---  |
+| symAD | VCTK | 48 kHz | 24 kbps | `exp/autoencoder/symAD_c16_vctk_48000_hop320`  |
+| symAAD | VCTK | 48 kHz | 12.8 kbps  | `exp/autoencoder/symAAD_vctk_48000_hop300`  |
 | symAD | VCTK | 48 kHz | 12.8 kbps | `exp/autoencoder/symAD_vctk_48000_hop300`  |
 | symAD_univ | VCTK | 48 kHz | 12.8 kbps  | `exp/autoencoder/symADuniv_vctk_48000_hop300`  |
 | symAD | LibriTTS | 24 kHz | 6.4 kbps  | `exp/autoencoder/symAD_libritts_24000_hop300`  |

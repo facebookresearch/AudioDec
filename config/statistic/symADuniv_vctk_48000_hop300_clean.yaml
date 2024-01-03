@@ -12,14 +12,14 @@
 ###########################################################
 sampling_rate: 48000
 data:
-    path: "/mnt/home/yichiaowu/datasets/vctk_noisy/48000"
+    path: /mnt/home/yichiaowu/datasets/vctk_noisy/48000
     subset:
-        train: "clean_trainset_84spk_wav"
-        valid: "clean_validset_84spk_wav"
-        test:  "clean_testset_wav"
+        train: clean_trainset_84spk_wav
+        valid: clean_validset_84spk_wav
+        test:  clean_testset_wav
 
 ###########################################################
 #                    STATISTIC SETTING                    #
 ###########################################################
-analyzer: "exp/autoencoder/symADuniv_vctk_48000_hop300/checkpoint-500000steps.pkl"
-stats: "stats/symADuniv_vctk_48000_hop300_clean.npy"
+analyzer: exp/autoencoder/symADuniv_vctk_48000_hop300/checkpoint-500000steps.pkl
+stats: stats/symADuniv_vctk_48000_hop300_clean.npy

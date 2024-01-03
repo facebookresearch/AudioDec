@@ -13,11 +13,11 @@
 ###########################################################
 sampling_rate: &sampling_rate 48000
 data:
-    path: "/mnt/home/yichiaowu/datasets/vctk_noisy/48000"
+    path: /mnt/home/yichiaowu/datasets/vctk_noisy/48000
     subset:
-        train: "clean_trainset_84spk_wav"
-        valid: "clean_validset_84spk_wav"
-        test:  "clean_testset_wav"
+        train: clean_trainset_84spk_wav
+        valid: clean_validset_84spk_wav
+        test:  clean_testset_wav
 
 ###########################################################
 #                   MODEL SETTING                         #
@@ -39,10 +39,10 @@ generator_params:
     dec_ratios: [16, 8, 4, 2]
     enc_strides: [3, 4, 5, 5]
     dec_strides: [5, 5, 4, 3]
-    mode: 'causal'
-    codec: 'audiodec'
-    projector: 'conv1d'
-    quantier: 'residual_vq'
+    mode: causal
+    codec: audiodec
+    projector: conv1d
+    quantier: residual_vq
 
 discriminator_params:
     fft_sizes: [1024, 2048, 512]           # FFT sizes for each spectral discriminator.
@@ -154,7 +154,7 @@ generator_optimizer_params:
     weight_decay: 0.0
 generator_scheduler_type: StepLR
 generator_scheduler_params:
-    step_size: 200000      # Generator's scheduler step size.
+    step_size: 200000      # Generator scheduler step size.
     gamma: 1.0
 generator_grad_norm: -1
 discriminator_optimizer_type: Adam

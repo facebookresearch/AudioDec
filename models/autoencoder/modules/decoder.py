@@ -16,6 +16,7 @@ import inspect
 
 from layers.conv_layer import NonCausalConv1d, NonCausalConvTranspose1d
 from layers.conv_layer import CausalConv1d, CausalConvTranspose1d
+from layers.activation_function import get_activation
 from models.autoencoder.modules.residual_unit import NonCausalResidualUnit
 from models.autoencoder.modules.residual_unit import CausalResidualUnit
 from models.utils import check_mode
@@ -32,6 +33,8 @@ class DecoderBlock(torch.nn.Module):
         dilations=(1, 3, 9),
         bias=True,
         mode='causal',
+        nonlinear_activation="ELU",
+        nonlinear_activation_params={},
     ):
         super().__init__()
         self.mode = mode
@@ -55,7 +58,13 @@ class DecoderBlock(torch.nn.Module):
         self.res_units = torch.nn.ModuleList()
         for idx, dilation in enumerate(dilations):
             self.res_units += [
-                ResidualUnit(out_channels, out_channels, dilation=dilation)]
+                ResidualUnit(
+                    out_channels, 
+                    out_channels, 
+                    dilation=dilation,
+                    nonlinear_activation=nonlinear_activation,
+                    nonlinear_activation_params=nonlinear_activation_params,
+                )]
         self.num_res = len(self.res_units)
         
     def forward(self, x):
@@ -82,6 +91,8 @@ class Decoder(torch.nn.Module):
         kernel_size=7,
         bias=True,
         mode='causal',
+        nonlinear_activation="ELU",
+        nonlinear_activation_params={},
     ):
         super().__init__()
         assert len(channel_ratios) == len(strides)
@@ -108,7 +119,15 @@ class Decoder(torch.nn.Module):
             else:
                 out_channels = decode_channels
             self.conv_blocks += [
-                DecoderBlock(in_channels, out_channels, stride, bias=bias, mode=self.mode)]
+                DecoderBlock(
+                    in_channels, 
+                    out_channels, 
+                    stride, 
+                    bias=bias, 
+                    mode=self.mode,
+                    nonlinear_activation=nonlinear_activation,
+                    nonlinear_activation_params=nonlinear_activation_params,
+                )]
         self.num_blocks = len(self.conv_blocks)
 
         self.conv2 = Conv1d(out_channels, output_channels, kernel_size, 1, bias=False)
@@ -127,3 +146,69 @@ class Decoder(torch.nn.Module):
             x = self.conv_blocks[i].inference(x)
         x = self.conv2.inference(x)
         return x
+
+
+class ActivateDecoder(Decoder):
+    def __init__(self,
+        code_dim, 
+        output_channels,
+        decode_channels,
+        channel_ratios=(16, 8, 4, 2),
+        strides=(5, 5, 4, 3),
+        kernel_size=7,
+        bias=True,
+        mode='causal',
+        nonlinear_activation="ELU",
+        nonlinear_activation_params={},
+    ):
+        super().__init__(
+            code_dim=code_dim,
+            output_channels=output_channels,
+            decode_channels=decode_channels,
+            channel_ratios=channel_ratios,
+            strides=strides,
+            kernel_size=kernel_size,
+            bias=bias,
+            mode=mode,
+            nonlinear_activation=nonlinear_activation,
+            nonlinear_activation_params=nonlinear_activation_params,
+        )
+        self.conv_blocks = torch.nn.ModuleList()
+        for idx, stride in enumerate(strides):
+            in_channels = decode_channels * channel_ratios[idx]
+            if idx < (len(channel_ratios)-1):
+                out_channels = decode_channels * channel_ratios[idx+1]
+            else:
+                out_channels = decode_channels
+            # upsamping + residual
+            self.conv_blocks += [
+                torch.nn.Sequential(
+                    get_activation(nonlinear_activation, nonlinear_activation_params),
+                    DecoderBlock(
+                        in_channels, 
+                        out_channels, 
+                        stride, 
+                        bias=bias, 
+                        mode=self.mode,
+                        nonlinear_activation=nonlinear_activation,
+                        nonlinear_activation_params=nonlinear_activation_params,
+                    ),
+                )
+            ]
+        self.conv_blocks += [get_activation(nonlinear_activation, nonlinear_activation_params)] # for conv2
+        self.num_blocks = len(self.conv_blocks)
+        # output activation
+        self.activation_output = torch.nn.Tanh()
+
+    def forward(self, z):
+        return self.activation_output(super().forward(z))
+
+    def decode(self, z):
+        check_mode(self.mode, inspect.stack()[0][3])
+        x = self.conv1.inference(z)
+        for i in range(self.num_blocks-1):
+            x = self.conv_blocks[i][0](x) # activation
+            x = self.conv_blocks[i][1].inference(x) # DecoderBlock
+        x = self.conv_blocks[-1](x) # activation
+        x = self.conv2.inference(x)
+        return self.activation_output(x)

@@ -96,17 +96,21 @@ class TestMain(TestGEN):
     
     
     # INITIAL FOLDER
-    def initial_folder(self, subset, output_name):
-        # model name
-        encoder = os.path.dirname(self.encoder_checkpoint).split('/')[-1]
-        decoder = os.path.dirname(self.decoder_checkpoint).split('/')[-1]
-        # model checkpoint
-        encoder_checkpoint = os.path.basename(self.encoder_checkpoint).split('steps')[0].split('-')[-1]
-        decoder_checkpoint = os.path.basename(self.decoder_checkpoint).split('steps')[0].split('-')[-1]
-        testdir = f"{encoder}-{decoder}_{encoder_checkpoint}-{decoder_checkpoint}"
-        # testing set
-        setdir = self.encoder_config['data']['subset'][subset]
-        self.outdir = os.path.join(output_name, testdir, setdir)
+    def initial_folder(self, subset, output_name, specific_folder="False"):
+        if specific_folder == "True":
+            self.outdir = output_name
+        else:
+            # model name
+            encoder = os.path.dirname(self.encoder_checkpoint).split('/')[-1]
+            decoder = os.path.dirname(self.decoder_checkpoint).split('/')[-1]
+            # model checkpoint
+            encoder_checkpoint = os.path.basename(self.encoder_checkpoint).split('steps')[0].split('-')[-1]
+            decoder_checkpoint = os.path.basename(self.decoder_checkpoint).split('steps')[0].split('-')[-1]
+            testdir = f"{encoder}-{decoder}_{encoder_checkpoint}-{decoder_checkpoint}"
+            # testing set
+            setdir = self.encoder_config['data']['subset'][subset]
+            self.outdir = os.path.join(output_name, testdir, setdir)
+
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir, exist_ok=True)    
     
@@ -119,6 +123,7 @@ def main():
     parser.add_argument("--encoder", type=str, required=True)
     parser.add_argument("--decoder", type=str, required=True)
     parser.add_argument("--output_dir", type=str, required=True)
+    parser.add_argument('--specific_folder', choices=('True','False'), default='False')
     args = parser.parse_args()
 
     # initial test_main
@@ -132,7 +137,7 @@ def main():
     test_main.load_decoder()
 
     # initial folder
-    test_main.initial_folder(args.subset, args.output_dir)
+    test_main.initial_folder(args.subset, args.output_dir, args.specific_folder)
     
     # run testing
     test_main.run()

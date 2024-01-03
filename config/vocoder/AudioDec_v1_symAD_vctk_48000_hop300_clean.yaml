@@ -12,18 +12,18 @@
 ###########################################################
 sampling_rate: &sampling_rate 48000
 data:
-    path: "/mnt/home/yichiaowu/datasets/vctk_noisy/48000"
+    path: /mnt/home/yichiaowu/datasets/vctk_noisy/48000
     subset:
-        train: "clean_trainset_84spk_wav"
-        valid: "clean_validset_84spk_wav"
-        test: "clean_testset_wav"
+        train: clean_trainset_84spk_wav
+        valid: clean_validset_84spk_wav
+        test: clean_testset_wav
 
 ###########################################################
 #                   MODEL SETTING                         #
 ###########################################################
 model_type: HiFiGAN
 train_mode: vocoder
-analyzer: "exp/autoencoder/symAD_vctk_48000_hop300/checkpoint-200000steps.pkl"
+analyzer: exp/autoencoder/symAD_vctk_48000_hop300/checkpoint-200000steps.pkl
 
 generator_params:
     in_channels: 64                       # Number of input channels.
@@ -38,15 +38,15 @@ generator_params:
     groups: 3                             # groups number of conv.
     bias: true                            # Whether to use bias parameter in conv.
     use_additional_convs: true            # Whether to use additional conv layer in residual blocks.
-    nonlinear_activation: "LeakyReLU"     # Nonlinear activation type.
+    nonlinear_activation: LeakyReLU       # Nonlinear activation type.
     nonlinear_activation_params:          # Nonlinear activation paramters.
         negative_slope: 0.1
     use_weight_norm: true                 # Whether to apply weight normalization.
-    stats: "stats/symAD_vctk_48000_hop300_clean.npy"
+    stats: stats/symAD_vctk_48000_hop300_clean.npy
 
 discriminator_params:
     scales: 3                              # Number of multi-scale discriminator.
-    scale_downsample_pooling: "AvgPool1d"  # Pooling operation for scale discriminator.
+    scale_downsample_pooling: AvgPool1d    # Pooling operation for scale discriminator.
     scale_downsample_pooling_params:
         kernel_size: 4                     # Pooling kernel size.
         stride: 2                          # Pooling stride.
@@ -60,7 +60,7 @@ discriminator_params:
         max_groups: 16                     # Maximum number of groups in downsampling conv layers.
         bias: true
         downsample_scales: [4, 4, 4, 4, 1] # Downsampling scales.
-        nonlinear_activation: "LeakyReLU"  # Nonlinear activation.
+        nonlinear_activation: LeakyReLU    # Nonlinear activation.
         nonlinear_activation_params:
             negative_slope: 0.1
     follow_official_norm: true             # Whether to follow the official norm setting.
@@ -72,8 +72,8 @@ discriminator_params:
         channels: 32                       # Initial number of channels.
         downsample_scales: [3, 3, 3, 3, 1] # Downsampling scales.
         max_downsample_channels: 1024      # Maximum number of channels in downsampling conv layers.
-        bias: true                         # Whether to use bias parameter in conv layer."
-        nonlinear_activation: "LeakyReLU"  # Nonlinear activation.
+        bias: true                         # Whether to use bias parameter in conv layer.
+        nonlinear_activation: LeakyReLU    # Nonlinear activation.
         nonlinear_activation_params:       # Nonlinear activation paramters.
             negative_slope: 0.1
         use_weight_norm: true              # Whether to apply weight normalization.
@@ -88,7 +88,7 @@ mel_loss_params:
     fft_sizes: [2048]
     hop_sizes: [300]
     win_lengths: [2048]
-    window: "hann_window"
+    window: hann_window
     num_mels: 80
     fmin: 0
     fmax: 24000
@@ -99,7 +99,7 @@ stft_loss_params:
     fft_sizes: [1024, 2048, 512]     # List of FFT size for STFT-based loss.
     hop_sizes: [120, 240, 50]        # List of hop size for STFT-based loss
     win_lengths: [600, 1200, 240]    # List of window length for STFT-based loss.
-    window: "hann_window"            # Window function for STFT-based loss
+    window: hann_window              # Window function for STFT-based loss
 
 use_shape_loss: false                # Whether to use waveform shape loss.
 shape_loss_params:
