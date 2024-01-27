@@ -134,3 +134,6 @@ __pycache__/
 
 # models
 *.pkl
+
+# others
+temp/

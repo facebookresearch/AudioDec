@@ -9,6 +9,7 @@
 
 import os
 import torch
+import math
 from typing import Union
 from AudioDec.models.autoencoder.AudioDec import StreamGenerator as generator_audiodec
 from AudioDec.models.vocoder.HiFiGAN import StreamGenerator as generator_hifigan
@@ -28,7 +29,6 @@ class AudioDec(AudioCodec):
             receptive_length = receptive_length,
         )
 
-
     def _load_encoder(self, checkpoint):
         # load config
         config = self._load_config(checkpoint)
@@ -40,7 +40,6 @@ class AudioDec(AudioCodec):
         encoder = encoder(**config['generator_params'])
         encoder.load_state_dict(torch.load(checkpoint, map_location='cpu')['model']['generator'])
         return encoder
-
 
     def _load_decoder(self, checkpoint):
         # load config
@@ -55,6 +54,12 @@ class AudioDec(AudioCodec):
         decoder = decoder(**config['generator_params'])
         decoder.load_state_dict(torch.load(checkpoint, map_location='cpu')['model']['generator'])
         return decoder
+    
+    def get_hop_length(self, checkpoint):
+        # load receiver model(s)
+        assert os.path.exists(checkpoint), f'{checkpoint} does not exist!'
+        config = self._load_config(checkpoint)
+        return math.prod(config['generator_params']['enc_strides'])
 
 
 class AudioDecStreamer(AudioCodecStreamer):
@@ -92,11 +97,9 @@ class AudioDecStreamer(AudioCodecStreamer):
             rx_device = rx_device,
         )
 
-
     def _encode(self, x):
         x = self.tx_encoder.encode(x)
         return self.tx_encoder.quantize(x)
-
 
     def _decode(self, x):
         x = self.rx_encoder.lookup(x)
@@ -158,6 +161,18 @@ def assign_model(model):
         rx_steps = 1000000
         encoder_checkpoint = os.path.join('exp', 'autoencoder', 'symADuniv_vctk_48000_hop300', f"checkpoint-{tx_steps}steps.pkl")
         decoder_checkpoint = os.path.join('exp', 'autoencoder', 'symADuniv_vctk_48000_hop300', f"checkpoint-{rx_steps}steps.pkl")
+    elif model == 'vctk_activate_sym':
+        sample_rate = 48000
+        tx_steps = 200000
+        rx_steps = 700000
+        encoder_checkpoint = os.path.join('exp', 'autoencoder', 'symAAD_vctk_48000_hop300', f"checkpoint-{tx_steps}steps.pkl")
+        decoder_checkpoint = os.path.join('exp', 'autoencoder', 'symAAD_vctk_48000_hop300', f"checkpoint-{rx_steps}steps.pkl")
+    elif model == 'vctk_c16h320_sym':
+        sample_rate = 48000
+        tx_steps = 500000
+        rx_steps = 1000000
+        encoder_checkpoint = os.path.join('exp', 'autoencoder', 'symAD_c16_vctk_48000_hop320', f"checkpoint-{tx_steps}steps.pkl")
+        decoder_checkpoint = os.path.join('exp', 'autoencoder', 'symAD_c16_vctk_48000_hop320', f"checkpoint-{rx_steps}steps.pkl")
     else:
         raise NotImplementedError(f'Model {model} is not supported!')
     

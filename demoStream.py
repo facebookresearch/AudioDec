@@ -25,7 +25,7 @@ def main():
     parser.add_argument('--rx_cuda', type=int, default=-1 )
     parser.add_argument('--input_device', type=int, default=1)
     parser.add_argument('--output_device', type=int, default=4)
-    parser.add_argument('--frame_size', type=int, default=1200)
+    parser.add_argument('--frame_size', type=int, default=1500)
     parser.add_argument('--num_threads', type=int, default=4)
     args = parser.parse_args()
 
@@ -48,6 +48,10 @@ def main():
     audiodec = AudioDec(tx_device=tx_device, rx_device=rx_device)
     audiodec.load_transmitter(encoder_checkpoint)
     audiodec.load_receiver(encoder_checkpoint, decoder_checkpoint)
+
+    # check frame_size and hop_length are matched
+    hop_length = audiodec.get_hop_length(encoder_checkpoint)
+    assert (args.frame_size % hop_length) == 0, f"fram_size({args.frame_size}) must be a multiple of codec hop_length({hop_length})!"
 
     # Streamer initinalize
     print("Streamer initinalizing!")

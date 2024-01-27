@@ -16,6 +16,7 @@ import inspect
 
 from AudioDec.layers.conv_layer import NonCausalConv1d
 from AudioDec.layers.conv_layer import CausalConv1d
+from AudioDec.layers.activation_function import get_activation
 from AudioDec.models.autoencoder.modules.residual_unit import NonCausalResidualUnit
 from AudioDec.models.autoencoder.modules.residual_unit import CausalResidualUnit
 from AudioDec.models.utils import check_mode
@@ -32,6 +33,8 @@ class EncoderBlock(torch.nn.Module):
         dilations=(1, 3, 9),
         bias=True,
         mode='causal',
+        nonlinear_activation="ELU",
+        nonlinear_activation_params={},
     ):
         super().__init__()
         self.mode = mode
@@ -47,7 +50,13 @@ class EncoderBlock(torch.nn.Module):
         self.res_units = torch.nn.ModuleList()
         for dilation in dilations:
             self.res_units += [
-                ResidualUnit(in_channels, in_channels, dilation=dilation)]
+                ResidualUnit(
+                    in_channels, 
+                    in_channels, 
+                    dilation=dilation,
+                    nonlinear_activation=nonlinear_activation,
+                    nonlinear_activation_params=nonlinear_activation_params,
+                )]
         self.num_res = len(self.res_units)
 
         self.conv = Conv1d(
@@ -81,6 +90,8 @@ class Encoder(torch.nn.Module):
         kernel_size=7,
         bias=True,
         mode='causal',
+        nonlinear_activation="ELU",
+        nonlinear_activation_params={},
     ):
         super().__init__()
         assert len(channel_ratios) == len(strides)
@@ -104,7 +115,15 @@ class Encoder(torch.nn.Module):
         for idx, stride in enumerate(strides):
             out_channels = encode_channels * channel_ratios[idx]
             self.conv_blocks += [
-                EncoderBlock(in_channels, out_channels, stride, bias=bias, mode=self.mode)]
+                EncoderBlock(
+                    in_channels, 
+                    out_channels, 
+                    stride, 
+                    bias=bias, 
+                    mode=self.mode,
+                    nonlinear_activation=nonlinear_activation,
+                    nonlinear_activation_params=nonlinear_activation_params,
+                )]
             in_channels = out_channels
         self.num_blocks = len(self.conv_blocks)
         self.out_channels = out_channels
@@ -123,3 +142,34 @@ class Encoder(torch.nn.Module):
         return x
 
 
+class ActivateEncoder(Encoder):
+    def __init__(self,
+        input_channels,
+        encode_channels,
+        channel_ratios=(2, 4, 8, 16),
+        strides=(3, 4, 5, 5),
+        kernel_size=7,
+        bias=True,
+        mode='causal',
+        nonlinear_activation="ELU",
+        nonlinear_activation_params={},
+    ):
+        super().__init__(
+            input_channels=input_channels,
+            encode_channels=encode_channels,
+            channel_ratios=channel_ratios,
+            strides=strides,
+            kernel_size=kernel_size,
+            bias=bias,
+            mode=mode,
+            nonlinear_activation=nonlinear_activation,
+            nonlinear_activation_params=nonlinear_activation_params,
+        )
+        self.activation = get_activation(nonlinear_activation, nonlinear_activation_params)
+
+
+    def forward(self, x): 
+        return self.activation(super().forward(x))
+    
+    def encode(self, x):
+        return self.activation(super().encode(x))

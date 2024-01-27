@@ -11,9 +11,18 @@
 
 """Convolution layers."""
 
+import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+
+def int2tuple(variable, length):
+    if isinstance(variable, int):
+        return (variable,)*length
+    else:
+        assert len(variable) == length, f"The length of {variable} is not {length}!"
+        return variable
 
 
 class Conv1d1x1(nn.Conv1d):
@@ -172,7 +181,7 @@ class CausalConvTranspose1d(NonCausalConvTranspose1d):
             bias=bias,
         )
         self.stride = stride
-        self.pad_length = 1
+        self.pad_length = (math.ceil(kernel_size/stride) - 1)
         if pad_buffer is None:
             pad_buffer = torch.zeros(1, in_channels, self.pad_length)
         self.register_buffer("pad_buffer", pad_buffer)
@@ -189,3 +198,48 @@ class CausalConvTranspose1d(NonCausalConvTranspose1d):
     
     def reset_buffer(self):
         self.pad_buffer.zero_()
+
+
+class NonCausalConv2d(nn.Module):
+    """2D noncausal convloution w/ 4-sides padding."""
+
+    def __init__(
+            self, 
+            in_channels, 
+            out_channels, 
+            kernel_size, 
+            stride=1, 
+            padding=-1, 
+            dilation=1,
+            groups=1,
+            bias=True):
+        super().__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.kernel_size = int2tuple(kernel_size, 2)
+        self.dilation = int2tuple(dilation, 2)
+        if isinstance(padding, int) and padding < 0:
+            padding_0 = (self.kernel_size[0] - 1) // 2 * self.dilation[0]
+            padding_1 = (self.kernel_size[1] - 1) // 2 * self.dilation[1]
+            padding = (padding_0, padding_1)
+        
+        self.conv = nn.Conv2d(
+            in_channels=in_channels, 
+            out_channels=out_channels, 
+            kernel_size=kernel_size,
+            stride=stride, 
+            padding=padding, 
+            dilation=dilation, 
+            groups=groups,
+            bias=bias,
+        )
+
+    def forward(self, x):
+        """
+        Args:
+            x (Tensor): Float tensor variable with the shape  (B, C, T).
+        Returns:
+            Tensor: Float tensor variable with the shape (B, C, T).
+        """
+        x = self.conv(x)
+        return x

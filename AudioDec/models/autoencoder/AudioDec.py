@@ -8,14 +8,15 @@
 # LICENSE file in the root directory of this source tree.
 #
 # Reference (https://github.com/kan-bayashi/ParallelWaveGAN/)
+# Reference (https://github.com/jik876/hifi-gan/)
 
 """AudioDec model."""
 import torch
-import inspect
+import logging
 
 from AudioDec.layers.conv_layer import CausalConv1d, CausalConvTranspose1d
-from AudioDec.models.autoencoder.modules.encoder import Encoder
-from AudioDec.models.autoencoder.modules.decoder import Decoder
+from AudioDec.models.autoencoder.modules.encoder import Encoder, ActivateEncoder
+from AudioDec.models.autoencoder.modules.decoder import Decoder, ActivateDecoder
 from AudioDec.models.autoencoder.modules.projector import Projector
 from AudioDec.models.autoencoder.modules.quantizer import Quantizer
 from AudioDec.models.utils import check_mode
@@ -43,11 +44,17 @@ class Generator(torch.nn.Module):
         codec='audiodec',
         projector='conv1d',
         quantier='residual_vq',
+        nonlinear_activation="ELU",
+        nonlinear_activation_params={},
+        use_weight_norm=False,
     ):
         super().__init__()
         if codec == 'audiodec':
             encoder = Encoder
             decoder = Decoder
+        elif codec == 'activate_audiodec':
+            encoder = ActivateEncoder
+            decoder = ActivateDecoder
         else:
             raise NotImplementedError(f"Codec ({codec}) is not supported!")
         self.mode = mode
@@ -61,6 +68,8 @@ class Generator(torch.nn.Module):
             kernel_size=7,
             bias=bias,
             mode=self.mode,
+            nonlinear_activation=nonlinear_activation,
+            nonlinear_activation_params=nonlinear_activation_params,
         )
 
         self.decoder = decoder(
@@ -72,6 +81,8 @@ class Generator(torch.nn.Module):
             kernel_size=7,
             bias=bias,
             mode=self.mode,
+            nonlinear_activation=nonlinear_activation,
+            nonlinear_activation_params=nonlinear_activation_params,
         )
 
         self.projector = Projector(
@@ -91,15 +102,63 @@ class Generator(torch.nn.Module):
             model=quantier,
         )
 
+        # apply weight norm & reset parameters
+        if use_weight_norm:
+            self.apply_weight_norm()
+            self.reset_parameters()
+
+
     def forward(self, x):
         (batch, channel, length) = x.size()
-        if channel != self.input_channels: 
+        if channel != self.input_channels:
             x = x.reshape(-1, self.input_channels, length) # (B, C, T) -> (B', C', T)
         x = self.encoder(x)
         z = self.projector(x)
         zq, vqloss, perplexity = self.quantizer(z)
         y = self.decoder(zq)
         return y, zq, z, vqloss, perplexity
+
+
+    def reset_parameters(self):
+        """Reset parameters.
+
+        This initialization follows the official implementation manner.
+        https://github.com/jik876/hifi-gan/blob/master/models.py
+
+        """
+
+        def _reset_parameters(m):
+            if isinstance(m, (torch.nn.Conv1d, torch.nn.ConvTranspose1d)):
+                m.weight.data.normal_(0.0, 0.01)
+                logging.debug(f"Reset parameters in {m}.")
+
+        self.apply(_reset_parameters)
+
+
+    def remove_weight_norm(self):
+        """Remove weight normalization module from all of the layers."""
+
+        def _remove_weight_norm(m):
+            try:
+                logging.debug(f"Weight norm is removed from {m}.")
+                torch.nn.utils.remove_weight_norm(m)
+            except ValueError:  # this module didn't have weight norm
+                return
+
+        self.apply(_remove_weight_norm)
+
+
+    def apply_weight_norm(self):
+        """Apply weight normalization module from all of the layers."""
+
+        def _apply_weight_norm(m):
+            if isinstance(m, torch.nn.Conv1d) or isinstance(
+                m, torch.nn.ConvTranspose1d
+            ):
+                torch.nn.utils.weight_norm(m)
+                logging.debug(f"Weight norm is applied to {m}.")
+
+        self.apply(_apply_weight_norm)
 
 
 # STREAMING
@@ -124,6 +183,9 @@ class StreamGenerator(Generator):
         codec='audiodec',
         projector='conv1d',
         quantier='residual_vq',
+        nonlinear_activation="ELU",
+        nonlinear_activation_params={},
+        use_weight_norm=False,
     ):
         super(StreamGenerator, self).__init__(
             input_channels=input_channels,
@@ -142,6 +204,9 @@ class StreamGenerator(Generator):
             codec=codec,
             projector=projector,
             quantier=quantier,
+            nonlinear_activation=nonlinear_activation,
+            nonlinear_activation_params=nonlinear_activation_params,
+            use_weight_norm=use_weight_norm,
         )
         check_mode(mode, "AudioDec Streamer")
         self.reset_buffer()
@@ -161,7 +226,7 @@ class StreamGenerator(Generator):
 
     def encode(self, x):
         (batch, channel, length) = x.size()
-        if channel != self.input_channels: 
+        if channel != self.input_channels:
             x = x.reshape(-1, self.input_channels, length) # (B, C, T) -> (B', C', T)
         x = self.encoder.encode(x)
         z = self.projector.encode(x)

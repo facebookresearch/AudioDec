@@ -24,8 +24,9 @@ A good audio codec for live applications such as telecommunication is characteri
 
 
 ## NEWS
-- **2023/5/17**: Upload the demo sounds on the [demo page](https://bigpon.github.io/AudioDec_demo/)
-- **2023/5/13**: 1st version is released
+- **2024/01/03**: Update pre-trained models ([issue9](https://github.com/facebookresearch/AudioDec/issues/9) and [issue11](https://github.com/facebookresearch/AudioDec/issues/11))
+- **2023/05/17**: Upload the demo sounds on the [demo page](https://bigpon.github.io/AudioDec_demo/)
+- **2023/05/13**: 1st version is released
 
 ## Requirements
 This repository is tested on Ubuntu 20.04 using a V100 and the following settings.
@@ -58,7 +59,7 @@ The source codes of trainers.
 The source codes of utils for the demo.
 
 ## Run real-time streaming encoding/decoding demo
-1. Please download the whole [exp](https://github.com/facebookresearch/AudioDec/releases/download/pretrain_models/exp.zip) folder and put it in the AudioDec project directory.  
+1. Please download the whole [exp](https://github.com/facebookresearch/AudioDec/releases/download/pretrain_models_v02/exp.zip) folder and put it in the AudioDec project directory.  
 2. Get the list of all I/O devices
 ```bash
 $ python -m sounddevice
@@ -78,7 +79,7 @@ $ python demoStream.py --tx_cuda -1 --rx_cuda -1 --input_device 1 --output_devic
 ```
 
 ## Run codec demo with files
-1. Please download the whole [exp](https://github.com/facebookresearch/AudioDec/releases/download/pretrain_models/exp.zip) folder and put it in the AudioDec project directory.  
+1. Please download the whole [exp](https://github.com/facebookresearch/AudioDec/releases/download/pretrain_models_v02/exp.zip) folder and put it in the AudioDec project directory.  
 2. Run the demo  
 ```bash
 ## VCTK 48000Hz models
@@ -136,10 +137,12 @@ $ bash submit_autoencoder.sh --stage 2 \
 ```
 
 ## Pre-trained Models
-All pre-trained models can be accessed via [exp](https://github.com/facebookresearch/AudioDec/releases/download/pretrain_models/exp.zip) (only the generators are provided).
+All pre-trained models can be accessed via [exp](https://github.com/facebookresearch/AudioDec/releases/download/pretrain_models_v02/exp.zip) (only the generators are provided).
 
 | AutoEncoder | Corpus | Fs | Bitrate | Path |  
 |---  |---  |---  |---  |---  |
+| symAD | VCTK | 48 kHz | 24 kbps | `exp/autoencoder/symAD_c16_vctk_48000_hop320`  |
+| symAAD | VCTK | 48 kHz | 12.8 kbps  | `exp/autoencoder/symAAD_vctk_48000_hop300`  |
 | symAD | VCTK | 48 kHz | 12.8 kbps | `exp/autoencoder/symAD_vctk_48000_hop300`  |
 | symAD_univ | VCTK | 48 kHz | 12.8 kbps  | `exp/autoencoder/symADuniv_vctk_48000_hop300`  |
 | symAD | LibriTTS | 24 kHz | 6.4 kbps  | `exp/autoencoder/symAD_libritts_24000_hop300`  |
@@ -210,13 +213,14 @@ The majority of "AudioDec: An Open-source Streaming High-fidelity Neural Audio C
 
 ## FQ&A
 1. **Have you compared AudioDec with Encodec?**  
- Please refere to the [discussion](https://github.com/facebookresearch/AudioDec/issues/1).
+ Please refer to the [discussion](https://github.com/facebookresearch/AudioDec/issues/1).
 2. **Have you compared AudioDec with other non-neural-network codecs such as Opus?**  
 Since this paper focuses on providing a well-developed streamable neural codec implementation with an efficient training paradigm and modularized architecture, we only compared AudioDec with SoundStream.
 3. **Can you also release the pre-trained discriminators?**  
 For many applications such as denoising, updating only the encoder achieves almost the same performance as updating the whole model. For applications involving decoder updating such as binaural rending, it might be better to design specific discriminators for that application. Therefore, we release only the generators.
 4. **Can AudioDec encode/decode multi-channel signals?**  
-Yes, you can train a MIMO model by changing the input_channels and output_channels in the config. One lesson I learned to train a MIMO model is that although the generator is MIMO, reshaping the generator output signal to mono for the following discriminator will markedly improve the MIMO audio quality.
+Yes, you can train a MIMO model by changing the input_channels and output_channels in the config. One lesson I learned in training a MIMO model is that although the generator is MIMO, reshaping the generator output signal to mono for the following discriminator will markedly improve the MIMO audio quality.
+
 
 
 

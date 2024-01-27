@@ -10,39 +10,40 @@
 ###########################################################
 #                   DATA SETTING                          #
 ###########################################################
-sampling_rate: &sampling_rate 24000
+sampling_rate: &sampling_rate 48000
 data:
-    path: /mnt/home/yichiaowu/datasets/LibriTTS/LibriTTS/24000
+    path: /mnt/home/yichiaowu/datasets/list
     subset:
-        train: train-clean-450
-        valid: dev-clean-1utt
-        test:  test-clean-1utt
+        train: vctk_48000_clean_trainset_84spk.txt
+        valid: vctk_48000_clean_validset_84spk.txt
+        test:  vctk_48000_clean_testset.txt
+        vhstest: VHS_48000_raw_Phase1_test.txt
 
 ###########################################################
 #                   MODEL SETTING                         #
 ###########################################################
-model_type: HiFiGAN
-train_mode: vocoder
-analyzer: exp/autoencoder/symAD_libritts_24000_hop300/checkpoint-500000steps.pkl
+model_type: symAudioDec
+train_mode: autoencoder
+paradigm: efficient
 
 generator_params:
-    in_channels: 64                       # Number of input channels.
-    out_channels: 1                       # Number of output channels.
-    channels: 512                         # Number of initial channels.
-    kernel_size: 7                        # Kernel size of initial and final conv layers.
-    upsample_scales: [5, 5, 4, 3]         # Upsampling scales. The product of upsample_scales should be the same as hop_size.
-    upsample_kernel_sizes: [10, 10, 8, 6] # Kernel size for upsampling layers.
-    resblock_kernel_sizes: [11]           # Kernel size for residual blocks.
-    resblock_dilations:                   # Dilations for residual blocks.
-        - [1, 3, 5]
-    groups: 3                             # groups number of conv.
-    bias: true                            # Whether to use bias parameter in conv.
-    use_additional_convs: true            # Whether to use additional conv layer in residual blocks.
-    nonlinear_activation: LeakyReLU       # Nonlinear activation type.
-    nonlinear_activation_params:          # Nonlinear activation paramters.
-        negative_slope: 0.1
-    use_weight_norm: true                 # Whether to apply weight normalization.
-    stats: stats/symAD_libritts_24000_hop300_clean.npy
+    input_channels: 1
+    output_channels: 1
+    encode_channels: 32
+    decode_channels: 32
+    code_dim: 64
+    codebook_num: 8
+    codebook_size: 1024
+    bias: true
+    enc_ratios: [2, 4, 8, 16]
+    dec_ratios: [16, 8, 4, 2]
+    enc_strides: [3, 4, 5, 5]
+    dec_strides: [5, 5, 4, 3]
+    mode: causal
+    codec: activate_audiodec
+    projector: conv1d
+    quantier: residual_vq
+    use_weight_norm: true
 
 discriminator_params:
     scales: 3                              # Number of multi-scale discriminator.
@@ -91,7 +92,7 @@ mel_loss_params:
     window: hann_window
     num_mels: 80
     fmin: 0
-    fmax: 12000
+    fmax: 24000
     log_base: null
 
 use_stft_loss: false                 # Whether to use multi-resolution STFT loss.
@@ -123,17 +124,19 @@ feat_match_loss_params:
 ###########################################################
 #                  LOSS WEIGHT SETTING                    #
 ###########################################################
-lambda_adv: 1.0          # Loss weight for adversarial loss.
-lambda_feat_match: 2.0   # Loss weight for feat match loss.
+lambda_adv: 1.0          # Loss weight of adversarial loss.
+lambda_feat_match: 2.0   # Loss weight of feat match loss.
+lambda_vq_loss: 1.0      # Loss weight of vector quantize loss.
 lambda_mel_loss: 45.0    # Loss weight of mel-spectrogram spectloss.
 lambda_stft_loss: 45.0   # Loss weight of multi-resolution stft loss.
 lambda_shape_loss: 45.0  # Loss weight of multi-window shape loss.
-
+      
 ###########################################################
 #                  DATA LOADER SETTING                    #
 ###########################################################
 batch_size: 16              # Batch size.
-batch_length: 9600          # Length of each audio in batch. Make sure dividable by hop_size.
+batch_length: 9600          # Length of each audio in batch (training w/o adv). Make sure dividable by hop_size.
+adv_batch_length: 9600      # Length of each audio in batch (training w/ adv). Make sure dividable by hop_size.
 pin_memory: true            # Whether to pin memory in Pytorch DataLoader.
 num_workers: 2              # Number of workers in Pytorch DataLoader.
 
@@ -142,17 +145,13 @@ num_workers: 2              # Number of workers in Pytorch DataLoader.
 ###########################################################
 generator_optimizer_type: Adam
 generator_optimizer_params:
-    lr: 2.0e-4
+    lr: 1.0e-4
     betas: [0.5, 0.9]
     weight_decay: 0.0
-generator_scheduler_type: MultiStepLR
+generator_scheduler_type: StepLR
 generator_scheduler_params:
-    gamma: 0.5
-    milestones:
-        - 200000
-        - 400000
-        - 600000
-        - 800000
+    step_size: 200000      # Generator scheduler step size.
+    gamma: 1.0
 generator_grad_norm: -1
 discriminator_optimizer_type: Adam
 discriminator_optimizer_params:
@@ -172,9 +171,11 @@ discriminator_grad_norm: -1
 ###########################################################
 #                    INTERVAL SETTING                     #
 ###########################################################
-generator_train_start_steps: 1     # Number of steps to start to train discriminator.
-discriminator_train_start_steps: 0 # Number of steps to start to train discriminator.
-train_max_steps: 500000            # Number of training steps.
+start_steps:                       # Number of steps to start training
+    generator: 0
+    discriminator: 200000 
+train_max_steps: 200000            # Number of training steps. (w/o adv)
+adv_train_max_steps: 700000        # Number of training steps. (w/ adv)
 save_interval_steps: 100000        # Interval steps to save checkpoint.
 eval_interval_steps: 1000          # Interval steps to evaluate the network.
 log_interval_steps: 100            # Interval steps to record the training log.

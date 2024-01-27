@@ -1,14 +1,24 @@
 adv_batch_length: 9600
 adv_train_max_steps: 1000000
-batch_length: 9600
+batch_length: 96000
 batch_size: 16
-config: config/autoencoder/symADuniv_vctk_48000_hop300.yaml
+complex_stft_loss_params:
+  center: true
+  fft_sizes:
+  - 510
+  hop_sizes:
+  - 320
+  win_lengths:
+  - 510
+  window: hann_window
+config: config/autoencoder/symAD_c16_vctk_48000_hop320_mel.yaml
 data:
-  path: /mnt/home/yichiaowu/datasets/vctk_noisy/48000
+  path: /mnt/home/yichiaowu/datasets/list
   subset:
-    test: clean_testset_wav
-    train: clean_trainset_84spk_wav
-    valid: clean_validset_84spk_wav
+    test: vctk_48000_clean_testset.txt
+    train: vctk_48000_clean_trainset_84spk.txt
+    valid: vctk_48000_clean_validset_84spk.txt
+    vhstest: VHS_48000_raw_Phase1_test.txt
 disable_cudnn: 'False'
 discriminator_adv_loss_params:
   average_by_discriminators: false
@@ -21,14 +31,7 @@ discriminator_optimizer_params:
   weight_decay: 0.0
 discriminator_optimizer_type: Adam
 discriminator_params:
-  fft_sizes:
-  - 1024
-  - 2048
-  - 512
-  hop_sizes:
-  - 120
-  - 240
-  - 50
+  follow_official_norm: true
   period_discriminator_params:
     bias: true
     channels: 32
@@ -55,43 +58,33 @@ discriminator_params:
   - 5
   - 7
   - 11
-  spectral_discriminator_params:
+  scale_discriminator_params:
     bias: true
-    channels: 32
+    channels: 128
+    downsample_scales:
+    - 4
+    - 4
+    - 4
+    - 4
+    - 1
+    in_channels: 1
     kernel_sizes:
-    - - 3
-      - 9
-    - - 3
-      - 9
-    - - 3
-      - 9
-    - - 3
-      - 9
-    - - 3
-      - 3
-    - - 3
-      - 3
+    - 15
+    - 41
+    - 5
+    - 3
+    max_downsample_channels: 1024
+    max_groups: 16
     nonlinear_activation: LeakyReLU
     nonlinear_activation_params:
-      negative_slope: 0.2
-    strides:
-    - - 1
-      - 1
-    - - 1
-      - 2
-    - - 1
-      - 2
-    - - 1
-      - 2
-    - - 1
-      - 1
-    - - 1
-      - 1
-  win_lengths:
-  - 600
-  - 1200
-  - 240
-  window: hann_window
+      negative_slope: 0.1
+    out_channels: 1
+  scale_downsample_pooling: AvgPool1d
+  scale_downsample_pooling_params:
+    kernel_size: 4
+    padding: 2
+    stride: 2
+  scales: 3
 discriminator_scheduler_params:
   gamma: 0.5
   milestones:
@@ -119,7 +112,7 @@ generator_optimizer_type: Adam
 generator_params:
   bias: true
   code_dim: 64
-  codebook_num: 8
+  codebook_num: 16
   codebook_size: 1024
   codec: audiodec
   dec_ratios:
@@ -128,10 +121,10 @@ generator_params:
   - 4
   - 2
   dec_strides:
-  - 5
+  - 8
   - 5
   - 4
-  - 3
+  - 2
   decode_channels: 32
   enc_ratios:
   - 2
@@ -139,10 +132,10 @@ generator_params:
   - 8
   - 16
   enc_strides:
-  - 3
+  - 2
   - 4
   - 5
-  - 5
+  - 8
   encode_channels: 32
   input_channels: 1
   mode: causal
@@ -154,6 +147,8 @@ generator_scheduler_params:
   step_size: 200000
 generator_scheduler_type: StepLR
 lambda_adv: 1.0
+lambda_complex_stft_l1loss: 100
+lambda_complex_stft_l2loss: 100
 lambda_feat_match: 2.0
 lambda_mel_loss: 45.0
 lambda_shape_loss: 45.0
@@ -161,50 +156,42 @@ lambda_stft_loss: 45.0
 lambda_vq_loss: 1.0
 log_interval_steps: 100
 mel_loss_params:
-  fft_sizes:
+  fft_sizes: &id001
   - 2048
   fmax: 24000
   fmin: 0
   fs: 48000
-  hop_sizes:
-  - 300
+  hop_sizes: &id002
+  - 320
   log_base: null
   num_mels: 80
-  win_lengths:
+  win_lengths: &id003
   - 2048
   window: hann_window
-model_type: symAudioDecUniv
+model_type: symAudioDec
 num_workers: 2
-outdir: exp/autoencoder/symADuniv_vctk_48000_hop300
+outdir: exp/autoencoder/symAD_c16_vctk_48000_hop320_mel
 paradigm: efficient
 pin_memory: true
-resume: ''
+resume: exp/autoencoder/symAD_c16_vctk_48000_hop320_mel/checkpoint-700000steps.pkl
 sampling_rate: 48000
 save_interval_steps: 100000
 seed: 1337
 shape_loss_params:
   winlen:
-  - 300
+  - 320
 start_steps:
   discriminator: 500000
   generator: 0
 stft_loss_params:
-  fft_sizes:
-  - 1024
-  - 2048
-  - 512
-  hop_sizes:
-  - 120
-  - 240
-  - 50
-  win_lengths:
-  - 600
-  - 1200
-  - 240
+  fft_sizes: *id001
+  hop_sizes: *id002
+  win_lengths: *id003
   window: hann_window
-tag: autoencoder/symADuniv_vctk_48000_hop300
+tag: autoencoder/symAD_c16_vctk_48000_hop320_mel
 train_max_steps: 500000
 train_mode: autoencoder
+use_complex_stft_loss: false
 use_feat_match_loss: true
 use_mel_loss: true
 use_shape_loss: false

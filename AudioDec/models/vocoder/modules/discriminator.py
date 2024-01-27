@@ -21,6 +21,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchaudio.functional import spectrogram
+from layers.conv_layer import NonCausalConv1d, NonCausalConv2d
 
 
 class HiFiGANPeriodDiscriminator(nn.Module):
@@ -72,12 +73,12 @@ class HiFiGANPeriodDiscriminator(nn.Module):
         out_chs = channels
         for downsample_scale in downsample_scales:
             self.convs += [
-                torch.nn.Sequential(
-                    torch.nn.Conv2d(
+                nn.Sequential(
+                    NonCausalConv2d(
                         in_chs,
                         out_chs,
                         (kernel_sizes[0], 1),
-                        (downsample_scale, 1),
+                        stride=(downsample_scale, 1),
                         padding=((kernel_sizes[0] - 1) // 2, 0),
                     ),
                     getattr(torch.nn, nonlinear_activation)(
@@ -88,11 +89,11 @@ class HiFiGANPeriodDiscriminator(nn.Module):
             in_chs = out_chs
             # NOTE(kan-bayashi): Use downsample_scale + 1?
             out_chs = min(out_chs * 4, max_downsample_channels)
-        self.output_conv = torch.nn.Conv2d(
+        self.output_conv = NonCausalConv2d(
             out_chs,
             out_channels,
             (kernel_sizes[1] - 1, 1),
-            1,
+            stride=1,
             padding=((kernel_sizes[1] - 1) // 2, 0),
         )
 
@@ -140,8 +141,8 @@ class HiFiGANPeriodDiscriminator(nn.Module):
         """Apply weight normalization module from all of the layers."""
 
         def _apply_weight_norm(m):
-            if isinstance(m, torch.nn.Conv2d):
-                torch.nn.utils.weight_norm(m)
+            if isinstance(m, nn.Conv2d):
+                nn.utils.weight_norm(m)
                 logging.debug(f"Weight norm is applied to {m}.")
 
         self.apply(_apply_weight_norm)
@@ -150,8 +151,8 @@ class HiFiGANPeriodDiscriminator(nn.Module):
         """Apply spectral normalization module from all of the layers."""
 
         def _apply_spectral_norm(m):
-            if isinstance(m, torch.nn.Conv2d):
-                torch.nn.utils.spectral_norm(m)
+            if isinstance(m, nn.Conv2d):
+                nn.utils.spectral_norm(m)
                 logging.debug(f"Spectral norm is applied to {m}.")
 
         self.apply(_apply_spectral_norm)
@@ -256,8 +257,8 @@ class HiFiGANScaleDiscriminator(nn.Module):
 
         # add first layer
         self.layers += [
-            torch.nn.Sequential(
-                torch.nn.Conv1d(
+            nn.Sequential(
+                NonCausalConv1d(
                     in_channels,
                     channels,
                     # NOTE(kan-bayashi): Use always the same kernel size
@@ -276,11 +277,11 @@ class HiFiGANScaleDiscriminator(nn.Module):
         groups = 4
         for downsample_scale in downsample_scales:
             self.layers += [
-                torch.nn.Sequential(
-                    torch.nn.Conv1d(
+                nn.Sequential(
+                    NonCausalConv1d(
                         in_chs,
                         out_chs,
-                        kernel_size=kernel_sizes[1],
+                        kernel_sizes[1],
                         stride=downsample_scale,
                         padding=(kernel_sizes[1] - 1) // 2,
                         groups=groups,
@@ -300,11 +301,11 @@ class HiFiGANScaleDiscriminator(nn.Module):
         # add final layers
         out_chs = min(in_chs * 2, max_downsample_channels)
         self.layers += [
-            torch.nn.Sequential(
-                torch.nn.Conv1d(
+            nn.Sequential(
+                NonCausalConv1d(
                     in_chs,
                     out_chs,
-                    kernel_size=kernel_sizes[2],
+                    kernel_sizes[2],
                     stride=1,
                     padding=(kernel_sizes[2] - 1) // 2,
                     bias=bias,
@@ -313,10 +314,10 @@ class HiFiGANScaleDiscriminator(nn.Module):
             )
         ]
         self.layers += [
-            torch.nn.Conv1d(
+            NonCausalConv1d(
                 out_chs,
                 out_channels,
-                kernel_size=kernel_sizes[3],
+                kernel_sizes[3],
                 stride=1,
                 padding=(kernel_sizes[3] - 1) // 2,
                 bias=bias,
@@ -355,8 +356,8 @@ class HiFiGANScaleDiscriminator(nn.Module):
         """Apply weight normalization module from all of the layers."""
 
         def _apply_weight_norm(m):
-            if isinstance(m, torch.nn.Conv2d):
-                torch.nn.utils.weight_norm(m)
+            if isinstance(m, nn.Conv2d):
+                nn.utils.weight_norm(m)
                 logging.debug(f"Weight norm is applied to {m}.")
 
         self.apply(_apply_weight_norm)
@@ -365,8 +366,8 @@ class HiFiGANScaleDiscriminator(nn.Module):
         """Apply spectral normalization module from all of the layers."""
 
         def _apply_spectral_norm(m):
-            if isinstance(m, torch.nn.Conv2d):
-                torch.nn.utils.spectral_norm(m)
+            if isinstance(m, nn.Conv2d):
+                nn.utils.spectral_norm(m)
                 logging.debug(f"Spectral norm is applied to {m}.")
 
         self.apply(_apply_spectral_norm)
@@ -494,7 +495,7 @@ class UnivNetSpectralDiscriminator(nn.Module):
         # add first layer
         self.layers += [
             nn.Sequential(
-                nn.Conv2d(
+                NonCausalConv2d(
                     1,
                     channels,
                     kernel_sizes[0],
@@ -508,10 +509,10 @@ class UnivNetSpectralDiscriminator(nn.Module):
         for i in range(1, len(kernel_sizes) - 2):
             self.layers += [
                 nn.Sequential(
-                    nn.Conv2d(
+                    NonCausalConv2d(
                         channels,
                         channels,
-                        kernel_size=kernel_sizes[i],
+                        kernel_sizes[i],
                         stride=strides[i],
                         bias=bias,
                     ),
@@ -522,10 +523,10 @@ class UnivNetSpectralDiscriminator(nn.Module):
         # add final layers
         self.layers += [
             nn.Sequential(
-                nn.Conv2d(
+                NonCausalConv2d(
                     channels,
                     channels,
-                    kernel_size=kernel_sizes[-2],
+                    kernel_sizes[-2],
                     stride=strides[-2],
                     bias=bias,
                 ),
@@ -533,10 +534,10 @@ class UnivNetSpectralDiscriminator(nn.Module):
             )
         ]
         self.layers += [
-            nn.Conv2d(
+            NonCausalConv2d(
                 channels,
                 1,
-                kernel_size=kernel_sizes[-1],
+                kernel_sizes[-1],
                 stride=strides[-1],
                 bias=bias,
             )
@@ -563,18 +564,19 @@ class UnivNetSpectralDiscriminator(nn.Module):
             power=1.0,
             normalized=False,
         ).transpose(-1, -2)
-
+        outs = []
         for f in self.layers:
             x = f(x)
+            outs += [x]
 
-        return x
+        return outs
 
     def apply_weight_norm(self):
         """Apply weight normalization module from all of the layers."""
 
         def _apply_weight_norm(m):
-            if isinstance(m, torch.nn.Conv2d):
-                torch.nn.utils.weight_norm(m)
+            if isinstance(m, nn.Conv2d):
+                nn.utils.weight_norm(m)
                 logging.debug(f"Weight norm is applied to {m}.")
 
         self.apply(_apply_weight_norm)
