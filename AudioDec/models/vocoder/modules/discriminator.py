@@ -21,7 +21,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchaudio.functional import spectrogram
-from layers.conv_layer import NonCausalConv1d, NonCausalConv2d
+from AudioDec.layers.conv_layer import NonCausalConv1d, NonCausalConv2d
 
 
 class HiFiGANPeriodDiscriminator(nn.Module):
