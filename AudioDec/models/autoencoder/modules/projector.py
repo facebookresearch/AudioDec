@@ -12,9 +12,9 @@
 import torch
 import inspect
 
-from layers.conv_layer import NonCausalConv1d
-from layers.conv_layer import CausalConv1d
-from models.utils import check_mode
+from AudioDec.layers.conv_layer import NonCausalConv1d
+from AudioDec.layers.conv_layer import CausalConv1d
+from AudioDec.models.utils import check_mode
 
 
 class Projector(torch.nn.Module):
