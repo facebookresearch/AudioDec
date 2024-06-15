@@ -88,6 +88,37 @@ $ python demoFile.py --model vctk_v1 -i xxx.wav -o ooo.wav
 ## LibriTTS 24000Hz model
 $ python demoFile.py --model libritts_v1 -i xxx.wav -o ooo.wav
 ```
+## Tokenizing Audio for downstream use e.g Multimodal LLM , Valle style TTS 
+```
+from utils.audiodec import AudioDec, assign_model
+import  os
+import torch
+import numpy as np
+import torchaudio
+import shutil
+
+def tokenize_wav(wav_path,audiodec,device,sample_rate=24000):
+    wav, sr = torchaudio.load(wav_path)
+    if sr != sample_rate:
+        wav = torchaudio.functional.resample(wav, sr, sample_rate)    
+    with torch.no_grad():
+        wav = wav.unsqueeze(1) #C T-> 1 C T  
+        wav = wav.float().to(device)
+        z = audiodec.tx_encoder.encode(wav)
+        idx = audiodec.tx_encoder.quantize(z)
+        
+        inc = torch.arange(8)*1024
+        idx = idx.cpu() - inc.reshape(-1,1)
+        return idx.numpy().T
+
+model_name = "libritts_v1"
+device = 'cpu' 
+sample_rate, encoder_checkpoint, decoder_checkpoint = assign_model(model_name)
+audiodec = AudioDec(tx_device=device , rx_device=device )
+audiodec.load_transmitter(encoder_checkpoint)
+audiodec.load_receiver(encoder_checkpoint, decoder_checkpoint)
+audio_tokens = tokenize_wav('input.wav',audiodec,device,sample_rate) 
+```
 
 
 ## Training and testing the whole AudioDec pipeline
