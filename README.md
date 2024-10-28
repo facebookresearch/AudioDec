@@ -165,11 +165,11 @@ All pre-trained models can be accessed via [exp](https://github.com/facebookrese
 2. Prepare the noisy-clean corpus and follow the usage instructions in **submit_denoise.sh** to run the training and testing
 ```bash
 # Update the Encoder for denoising
-$ bash submit_autoencoder.sh --stage 0 \
+$ bash submit_denoise.sh --stage 0 \
 --tag_name "denoise/symAD_vctk_48000_hop300"
 
 # Denoise
-$ bash submit_autoencoder.sh --stage 2 \
+$ bash submit_denoise.sh --stage 2 \
 --encoder "denoise/symAD_vctk_48000_hop300"
 --decoder "vocoder/AudioDec_v1_symAD_vctk_48000_hop300_clean"
 --encoder_checkpoint 200000
