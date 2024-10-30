@@ -16,25 +16,25 @@ import torch
 import soundfile as sf
 
 from torch.utils.data import DataLoader
-from dataloader import CollaterAudio, CollaterAudioPair
-from dataloader import SingleDataset, MultiDataset
+from AudioDec.dataloader import CollaterAudio, CollaterAudioPair
+from AudioDec.dataloader import SingleDataset, MultiDataset
 
-from models.autoencoder.AudioDec import Generator as generator_audiodec
-from models.vocoder.HiFiGAN import Generator as generator_hifigan
-from models.vocoder.HiFiGAN import Discriminator as discriminator_hifigan
-from models.vocoder.UnivNet import Discriminator as discriminator_univnet
+from AudioDec.models.autoencoder.AudioDec import Generator as generator_audiodec
+from AudioDec.models.vocoder.HiFiGAN import Generator as generator_hifigan
+from AudioDec.models.vocoder.HiFiGAN import Discriminator as discriminator_hifigan
+from AudioDec.models.vocoder.UnivNet import Discriminator as discriminator_univnet
 
 from trainer.autoencoder import Trainer as TrainerAutoEncoder
 from trainer.vocoder import Trainer as TrainerVocoder
 from trainer.denoise import Trainer as TrainerDenoise
-from bin.train import TrainGAN
+from AudioDec.bin import TrainGAN
 
-from losses import DiscriminatorAdversarialLoss
-from losses import FeatureMatchLoss
-from losses import GeneratorAdversarialLoss
-from losses import MultiResolutionSTFTLoss
-from losses import MultiMelSpectrogramLoss
-from losses import MultiWindowShapeLoss
+from AudioDec.losses import DiscriminatorAdversarialLoss
+from AudioDec.losses import FeatureMatchLoss
+from AudioDec.losses import GeneratorAdversarialLoss
+from AudioDec.losses import MultiResolutionSTFTLoss
+from AudioDec.losses import MultiMelSpectrogramLoss
+from AudioDec.losses import MultiWindowShapeLoss
 
 
 class TrainMain(TrainGAN):
