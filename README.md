@@ -23,7 +23,7 @@ A good audio codec for live applications such as telecommunication is characteri
  2-2. Train the vocoder with the trained Encoder and stats for 500k iterations.
 
 
-## NEWS
+## News
 - **2024/01/03**: Update pre-trained models ([issue9](https://github.com/facebookresearch/AudioDec/issues/9) and [issue11](https://github.com/facebookresearch/AudioDec/issues/11))
 - **2023/05/17**: Upload the demo sounds on the [demo page](https://bigpon.github.io/AudioDec_demo/)
 - **2023/05/13**: 1st version is released
