@@ -13,7 +13,7 @@
 
 import torch
 import argparse
-from utils.audiodec import AudioDec, AudioDecStreamer, assign_model
+from AudioDec.utils.audiodec import AudioDec, AudioDecStreamer, assign_model
 
 
 def main():

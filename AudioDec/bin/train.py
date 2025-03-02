@@ -20,7 +20,7 @@ import logging
 import torch
 import numpy as np
 
-from bin.utils import load_config
+from AudioDec.bin.utils import load_config
 
 
 class TrainGAN(abc.ABC):

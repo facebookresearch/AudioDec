@@ -20,8 +20,8 @@ import soundfile as sf
 
 from tqdm import tqdm
 from sklearn.preprocessing import StandardScaler
-from dataloader import SingleDataset
-from models.autoencoder.AudioDec import Generator as generator_audiodec
+from AudioDec.dataloader import SingleDataset
+from AudioDec.models.autoencoder.AudioDec import Generator as generator_audiodec
 
 
 class StatisticMain(object):
