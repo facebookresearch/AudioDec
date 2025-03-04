@@ -24,6 +24,7 @@ A good audio codec for live applications such as telecommunication is characteri
 
 
 ## News
+- **2025/03/03**: The following work, [FlowDec](https://github.com/facebookresearch/FlowDec), has been released.
 - **2024/01/03**: Update pre-trained models ([issue9](https://github.com/facebookresearch/AudioDec/issues/9) and [issue11](https://github.com/facebookresearch/AudioDec/issues/11))
 - **2023/05/17**: Upload the demo sounds on the [demo page](https://bigpon.github.io/AudioDec_demo/)
 - **2023/05/13**: 1st version is released
