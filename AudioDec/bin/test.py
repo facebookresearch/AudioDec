@@ -15,13 +15,12 @@ import os
 import abc
 import sys
 import time
-import yaml
 import torch
 import logging
 import soundfile as sf
 
 from tqdm import tqdm
-from bin.utils import load_config
+from AudioDec.bin.utils import load_config
 
 class TestGEN(abc.ABC):
     def __init__(

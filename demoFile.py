@@ -16,7 +16,7 @@ import torch
 import argparse
 import numpy as np
 import soundfile as sf
-from utils.audiodec import AudioDec, assign_model
+from AudioDec.utils.audiodec import AudioDec, assign_model
 
 
 def main():

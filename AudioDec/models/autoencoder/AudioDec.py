@@ -11,16 +11,15 @@
 # Reference (https://github.com/jik876/hifi-gan/)
 
 """AudioDec model."""
-
 import torch
 import logging
 
-from layers.conv_layer import CausalConv1d, CausalConvTranspose1d
-from models.autoencoder.modules.encoder import Encoder, ActivateEncoder
-from models.autoencoder.modules.decoder import Decoder, ActivateDecoder
-from models.autoencoder.modules.projector import Projector
-from models.autoencoder.modules.quantizer import Quantizer
-from models.utils import check_mode
+from AudioDec.layers.conv_layer import CausalConv1d, CausalConvTranspose1d
+from AudioDec.models.autoencoder.modules.encoder import Encoder, ActivateEncoder
+from AudioDec.models.autoencoder.modules.decoder import Decoder, ActivateDecoder
+from AudioDec.models.autoencoder.modules.projector import Projector
+from AudioDec.models.autoencoder.modules.quantizer import Quantizer
+from AudioDec.models.utils import check_mode
 
 
 ### GENERATOR ###
@@ -111,14 +110,14 @@ class Generator(torch.nn.Module):
 
     def forward(self, x):
         (batch, channel, length) = x.size()
-        if channel != self.input_channels: 
+        if channel != self.input_channels:
             x = x.reshape(-1, self.input_channels, length) # (B, C, T) -> (B', C', T)
         x = self.encoder(x)
         z = self.projector(x)
         zq, vqloss, perplexity = self.quantizer(z)
         y = self.decoder(zq)
         return y, zq, z, vqloss, perplexity
-    
+
 
     def reset_parameters(self):
         """Reset parameters.
@@ -227,7 +226,7 @@ class StreamGenerator(Generator):
 
     def encode(self, x):
         (batch, channel, length) = x.size()
-        if channel != self.input_channels: 
+        if channel != self.input_channels:
             x = x.reshape(-1, self.input_channels, length) # (B, C, T) -> (B', C', T)
         x = self.encoder.encode(x)
         z = self.projector.encode(x)
